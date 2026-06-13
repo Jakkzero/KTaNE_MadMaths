@@ -1,0 +1,103 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <title>Mad Maths — Keep Talking and Nobody Explodes Module</title>
+    <meta name="viewport" content="initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="css/normalize.css">
+    <link rel="stylesheet" type="text/css" href="css/main.css">
+    <link rel="stylesheet" type="text/css" href="css/font.css">
+    <script src="js/ktane-utils.js"></script>
+</head>
+<body>
+    <div class="section">
+        <div class="page page-bg-01">
+            <div class="page-header">
+                <span class="page-header-doc-title">Keep Talking and Nobody Explodes Mod</span>
+                <span class="page-header-section-title">Mad Maths</span>
+            </div>
+            <div class="page-content">
+                <img src="img/Component/MadMaths.svg" class="diagram">
+                <h2>On the Subject of Mad Maths</h2>
+                <p class="flavour-text">"Pressing this button 30 times is driving me mad!"</p>
+
+                <ul>
+                    <li>Use the first table to identify the displayed digits, then use the second table to obtain a new value for each digit.</li>
+                    <li>Solve the equation and input the correct answer using the addition buttons, then press the submit button.</li>
+                    <li>The reset button may be pressed at any time to set the value back to 0.</li>
+                </ul>
+
+                <p>The digits appear on the module as follows:</p>
+                <h1>
+                <table>
+                    <tr>
+                        <th>0</th>
+                        <th>1</th>
+                        <th>2</th>
+                        <th>3</th>
+                        <th>4</th>
+                        <th>5</th>
+                        <th>6</th>
+                        <th>7</th>
+                        <th>8</th>
+                        <th>9</th>
+                    </tr>
+                    <tr>
+                        <td class = "in-game-font">Q</td>
+                        <td class = "in-game-font">1</td>
+                        <td class = "in-game-font">2</td>
+                        <td class = "in-game-font">5</td>
+                        <td class = "in-game-font">3</td>
+                        <td class = "in-game-font">4</td>
+                        <td class = "in-game-font">F</td>
+                        <td class = "in-game-font">7</td>
+                        <td class = "in-game-font flipped">U</td>
+                        <td class = "in-game-font">9</td>
+                    </tr>
+                </table>
+                </h1>
+
+                <p>
+                    Obtain a new value for each digit using the following table.<br> 
+                    If the final value is 10 or greater, subtract 10 until it is a single digit.
+                </p>
+
+                <table style="width:100%;">
+                    <tr><td>
+                        <h3>If the digit has been rotated 100° Clockwise:</h3>
+                        <p>
+                        Do the following step 3 times:<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If the digit is even, divide it by 2.<br> 
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Otherwise, multiply it by 3 and then add 1.
+                        </p>
+                    </tr></td>
+                    <tr><td>
+                        <h3>If the digit has been rotated 200° Clockwise:</h3>
+                        <p>
+                            If the digit is 0 or is greater than 5, add 3 and then square it.<br>
+                            Otherwise, cube the digit (x³).
+                        </p>
+                    </tr></td>
+                    <tr><td>
+                        <h3>If the digit has been rotated 300° Clockwise:</h3>
+                        <p>
+                        If the digit is equal to the number of batteries on the bomb, or the number of lit indicators on the bomb, or the number of batteries plus the number of lit indicators on the bomb, then subtract it from 9.<br>
+                        Otherwise, if the digit appears in the serial number, multiply it by 7.<br>
+                        Otherwise, the new digit is the number of indicators (lit and unlit) on the bomb.<br>
+                        </p>
+                    </tr></td>
+                    <tr><td>
+                        <h3>If the digit has been rotated 400° Clockwise:</h3>
+                        <p>
+                        If the serial number contains X, P, L, D or E and you have no strikes then multiply the digit by 11.<br>
+                        Otherwise, double the digit and then add the number of numbers in the serial number.
+                        </p>
+                    </tr></td>
+                </table>
+            </div>
+            <div class="page-footer relative-footer">Page 1 of 1</div>
+        </div>
+    </div>
+</body>
+</html>

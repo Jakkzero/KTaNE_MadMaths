@@ -1,0 +1,12 @@
+/* Manual font */
+@font-face {
+  font-family: 'Special Elite';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Special Elite'), local('SpecialElite-Regular'), url(../font/SpecialElite.ttf);
+}
+
+@font-face {
+  font-family: 'Ostrich Sans';
+  src: url(../font/OstrichSans-Heavy_90.otf);
+}
