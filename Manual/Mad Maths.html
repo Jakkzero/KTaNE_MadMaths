@@ -27,27 +27,31 @@
 
                 <ul>
                     <li>Use the first table to identify the displayed digits, then use the second table to obtain a new value for each digit.</li>
-                    <li>Solve the equation and input the correct answer using the addition buttons, then press the submit button.</li>
-                    <li>The reset button may be pressed at any time to set the value back to 0.</li>
+                    <li>Solve the equation and input the correct answer using the addition buttons, then press the (S)ubmit button.</li>
+                    <li>The (R)eset button may be pressed at any time to set the value back to 0.</li>
                 </ul>
 
                 <p>The digits appear on the module as follows:</p>
-                <h1>
-                <table>
+				
+				<h1>
+				<table style="width:100%;">
                     <tr>
-                        <th>0</th>
-                        <th>1</th>
-                        <th>2</th>
-                        <th>3</th>
-                        <th>4</th>
-                        <th>5</th>
-                        <th>6</th>
-                        <th>7</th>
-                        <th>8</th>
-                        <th>9</th>
+                        <th>Digit:</th>
+						<td>0</td>
+                        <td>1</td>
+                        <td>2</td>
+                        <td>3</td>
+                        <td>4</td>
+                        <td>5</td>
+                        <td>6</td>
+                        <td>7</td>
+                        <td>8</td>
+                        <td>9</td>
+						
                     </tr>
                     <tr>
-                        <td class = "fragment-mono-regular">Q</td>
+                        <th>Display reads:</th>
+						<td class = "fragment-mono-regular">Q</td>
                         <td class = "fragment-mono-regular">1</td>
                         <td class = "fragment-mono-regular">2</td>
                         <td class = "fragment-mono-regular">5</td>
@@ -59,7 +63,7 @@
                         <td class = "fragment-mono-regular">9</td>
                     </tr>
                 </table>
-                </h1>
+				</h1>
 
                 <p>
                     Obtain a new value for each digit using the following table.<br> 
@@ -68,34 +72,34 @@
 
                 <table style="width:100%;">
                     <tr><td>
-                        <h3>If the digit has been rotated 100° Clockwise:</h3>
-                        <p>
+                        <b><u>If the digit has been rotated 100° Clockwise:</u></b>
+                        <h5>
                         Do the following step 3 times:<br>
                         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If the digit is even, divide it by 2.<br> 
                         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Otherwise, multiply it by 3 and then add 1.
-                        </p>
+                        </h5>
                     </tr></td>
                     <tr><td>
-                        <h3>If the digit has been rotated 200° Clockwise:</h3>
-                        <p>
+                        <b><u>If the digit has been rotated 200° Clockwise:</u></b>
+                        <h5>
                             If the digit is 0 or is greater than 5, add 3 and then square it.<br>
                             Otherwise, cube the digit (x³).
-                        </p>
+                        </h5>
                     </tr></td>
                     <tr><td>
-                        <h3>If the digit has been rotated 300° Clockwise:</h3>
-                        <p>
+                        <b><u>If the digit has been rotated 300° Clockwise:</u></b>
+                        <h5>
                         If the digit is equal to the number of batteries on the bomb, or the number of lit indicators on the bomb, or the number of batteries plus the number of lit indicators on the bomb, then subtract it from 9.<br>
                         Otherwise, if the digit appears in the serial number, multiply it by 7.<br>
-                        Otherwise, the new digit is the number of indicators (lit and unlit) on the bomb.<br>
-                        </p>
+                        Otherwise, the new digit is the total number of indicators on the bomb.<br>
+                        </h5>
                     </tr></td>
                     <tr><td>
-                        <h3>If the digit has been rotated 400° Clockwise:</h3>
-                        <p>
+                        <b><u>If the digit has been rotated 400° Clockwise:</u></b>
+                        <h5>
                         If the serial number contains X, P, L, D or E then multiply the digit by 11.<br>
                         Otherwise, double the digit and then add the number of numbers in the serial number.
-                        </p>
+                        </h5>
                     </tr></td>
                 </table>
             </div>
