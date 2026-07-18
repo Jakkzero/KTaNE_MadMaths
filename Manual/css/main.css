@@ -113,6 +113,13 @@ textarea {
     font-size: 1.4em;
     font-weight: normal;
 }
+
+.fragment-mono-regular {
+  font-family: "Fragment Mono", monospace;
+  font-weight: 400;
+  font-style: normal;
+}
+
 .flipped {
     transform: rotate(180deg);
     padding-top: 0.05em;
