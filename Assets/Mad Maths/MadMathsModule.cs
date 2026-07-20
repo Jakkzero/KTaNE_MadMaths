@@ -24,6 +24,9 @@ public class MadMathsModule : MonoBehaviour
     public TextMesh ButtonALabel;
     public TextMesh ButtonBLabel;
 
+    static int ModuleIdCounter = 1;
+    int ModuleId;
+
     bool isActivated = false;
     bool isSolved = false;
 
@@ -39,6 +42,11 @@ public class MadMathsModule : MonoBehaviour
     int finalResult;
     int buttonA;
     int buttonB;
+
+    void Awake ()
+    {
+        ModuleId = ModuleIdCounter++;
+    }
 
     void SetSmallDigit(int index)
     {
@@ -91,6 +99,36 @@ public class MadMathsModule : MonoBehaviour
         }
         return -999;
     }
+    
+    void ArrayToLog(string description, int[] array, bool outputDisplayedDigit = false)
+    {
+        string[] stringArray = new string[array.Length];
+        string[] signs = { "+", "-", "×" };
+        string[] displayDigits = { "Q", "1", "2", "5", "3", "4", "F", "7", "U", "9" };
+
+        for (int i = 0; i < array.Length; i++)
+        {
+            if (array[i] >= 0)
+            {
+                if (!outputDisplayedDigit)
+                {
+                    stringArray[i] = array[i].ToString();
+                }
+                else
+                {
+                    stringArray[i] = displayDigits[array[i]];
+                }
+            }
+            else
+            {
+                stringArray[i] = signs[array[i] * -1 - 1];
+            } 
+        }
+
+        string output = string.Join(" ", stringArray);
+        
+        Debug.LogFormat("[Mad Maths #{0}] {1}: {2}", ModuleId, description, output);
+    } 
 
     //Finds two integer buttons that will allow the answer to be reached in the number of presses or less.
     int[] CalculateButtons(int answer, int presses, int cycle)
@@ -125,35 +163,37 @@ public class MadMathsModule : MonoBehaviour
             aButton = aButton * -1;
             bButton = bButton * -1;
         }
-
-        Debug.Log("Press " + aButton.ToString() + " " + aPresses.ToString() + " times and press " + bButton.ToString() + " " + bPresses.ToString() + " times to solve module.");
         
         //Changes a button if it's 0
         if (aButton == 0)
         {
+            aPresses = 0;
             aButton = Random.Range(2,10);
             if (Random.Range(0,2) == 0)
             {
                 aButton = aButton * -1;
             }
-            Debug.Log("First button changed to " + aButton.ToString());
         }
 
         if (bButton == 0)
         {
+            bPresses = 0;
             bButton = Random.Range(2, 10);
             if (Random.Range(0, 2) == 0)
             {
                 bButton = bButton * -1;
             }
-            Debug.Log("Second button changed to " + bButton.ToString());
         }
 
         //Makes a button negative if both are the same
         if (aButton == bButton)
         {
             aButton = aButton * -1;
+            bPresses = aPresses + bPresses;
+            aPresses = 0;
         }
+
+        Debug.LogFormat("[Mad Maths #{0}] First button adds {1}, second button adds {2}. Press the first button {3} times and the second button {4} times, then submit to solve.", ModuleId, aButton, bButton, aPresses, bPresses);
 
         int[] buttons = {aButton, bButton};
         return buttons;
@@ -215,8 +255,9 @@ public class MadMathsModule : MonoBehaviour
             }
         }
 
-        Debug.Log("State Numbers: " + string.Join(" ", (from i in stateNumbers select i.ToString()).ToArray<string>()));
-        Debug.Log("State Rotation: " + string.Join(" ", (from i in stateRotation select i.ToString()).ToArray<string>()));
+        ArrayToLog("Displayed digits", stateNumbers, true);
+        ArrayToLog("Actual digits", stateNumbers);
+        ArrayToLog("Rotations (in hundreds of degrees clockwise)", stateRotation);
 
         bool serialHasTargetLetters = CheckSerialTargetLetters();
         int numbersInSerial = BombInfo.GetSerialNumberNumbers().Count();
@@ -291,7 +332,7 @@ public class MadMathsModule : MonoBehaviour
 
         }
 
-        Debug.Log("Result Numbers: " + string.Join(" ", (from i in resultNumbers select i.ToString()).ToArray<string>()));
+        ArrayToLog("Numbers after calculation", resultNumbers);
 
         //Makes all results single digits
         for (int i = 0; i < 5; i++)
@@ -302,7 +343,7 @@ public class MadMathsModule : MonoBehaviour
             }
         }
 
-        Debug.Log("Result Numbers: " + string.Join(" ", (from i in resultNumbers select i.ToString()).ToArray<string>()));
+        ArrayToLog("After becoming single digit", resultNumbers);
 
         /// Calculates the answer.
         if (resultNumbers[2] < 0)
@@ -322,7 +363,7 @@ public class MadMathsModule : MonoBehaviour
             finalResult = Compute(value1, resultNumbers[4], resultNumbers[3]);
         }
 
-        Debug.Log("Final Result: " + finalResult.ToString());
+        Debug.LogFormat("[Mad Maths #{0}] Answer: {1}", ModuleId, finalResult);
 
         //Find a set of buttons that will allow the answer to be entered
 
