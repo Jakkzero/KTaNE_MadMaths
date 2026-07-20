@@ -439,6 +439,11 @@ public class MadMathsModule : MonoBehaviour
         if (Mathf.Abs(currentSubmission + buttonA) < 999)
         {
             currentSubmission += buttonA;
+            Debug.LogFormat("[Mad Maths #{0}] Pressed first button (adds {1}), submission is now {2}.", ModuleId, buttonA, currentSubmission);
+        }
+        else
+        {
+            Debug.LogFormat("[Mad Maths #{0}] Pressed first button (adds {1}), current submission can not be incremented/decremented further as that would require 4 digits of display so it remains at {2}.", ModuleId, buttonA, currentSubmission);
         }
 
         SubmissionDisplay.text = currentSubmission.ToString();
@@ -501,6 +506,11 @@ public class MadMathsModule : MonoBehaviour
         if (Mathf.Abs(currentSubmission + buttonB) < 999)
         {
             currentSubmission += buttonB;
+            Debug.LogFormat("[Mad Maths #{0}] Pressed second button (adds {1}), submission is now {2}.", ModuleId, buttonB, currentSubmission);
+        }
+        else
+        {
+            Debug.LogFormat("[Mad Maths #{0}] Pressed first button (adds {1}), current submission can not be incremented/decremented further as that would require 4 digits of display so it remains at {2}.", ModuleId, buttonB, currentSubmission);
         }
 
         SubmissionDisplay.text = currentSubmission.ToString();
@@ -518,6 +528,8 @@ public class MadMathsModule : MonoBehaviour
 
         currentSubmission = 0;
         SubmissionDisplay.text = currentSubmission.ToString();
+
+        Debug.LogFormat("[Mad Maths #{0}] Pressed (R)eset, submission is now {1}.", ModuleId, currentSubmission);
         return false;
     }
 
@@ -534,10 +546,12 @@ public class MadMathsModule : MonoBehaviour
         {
             BombModule.HandlePass();
             isSolved = true;
+            Debug.LogFormat("[Mad Maths #{0}] Pressed (S)ubmit, submission is {1}, answer is {2}. Correct, module solved!", ModuleId, currentSubmission, finalResult);
         }
         else
         {
             BombModule.HandleStrike();
+            Debug.LogFormat("[Mad Maths #{0}] Pressed (S)ubmit, submission is {1}, answer is {2}. Incorrect, strike given!", ModuleId, currentSubmission, finalResult);
         }
         return false;
     }
