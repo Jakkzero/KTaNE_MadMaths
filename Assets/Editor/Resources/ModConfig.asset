@@ -14,7 +14,28 @@ MonoBehaviour:
   id: MadMath
   title: Mad Math
   author: 
-  description: A rotating arithmetic experience.
+  description: 'A rotating arithmetic experience.
+
+
+    Solve the equation then input the correct answer using the addition or subtraction
+    buttons.
+
+
+    Manual by RandomisedTV.
+
+    Implementation by WitchArkanist and RandomisedTV.
+
+    Thanks to ufoencounter14 for testing and giving feedback.
+
+
+    Manual can be found at ktane.timwi.de or in the manuals folder of your game.
+
+
+    If there are any bugs or you would like to provide feedback then contact @randomisedtv
+    on Discord.
+
+
+    Source Code: https://github.com/Jakkzero/KTaNE_MadMaths'
   version: 1.0
   outputFolder: build
   previewImage: {fileID: 0}
