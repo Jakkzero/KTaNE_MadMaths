@@ -375,57 +375,9 @@ public class MadMathsModule : MonoBehaviour
         BombModule.OnActivate += ActivateModule;
         Reset.OnInteract += HandleReset;
         Submit.OnInteract += HandleSubmission;
-        //Add1.OnInteract += HandleIncrement1;
-        //Add5.OnInteract += HandleIncrement5;
-        //Sub1.OnInteract += HandleDecrement1;
-        //Sub5.OnInteract += HandleDecrement5;
         ButtonA.OnInteract += HandleIncrementA;
         ButtonB.OnInteract += HandleIncrementB;
     }
-
-    //bool HandleIncrement1()
-    //{
-    //    if (!isActivated)
-    //    {
-    //        return false;
-    //    }
-
-    //    KMAudio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, this.transform);
-
-    //    if (currentSubmission > 998)
-    //    {
-    //        currentSubmission = 999;
-    //    }
-    //    else
-    //    {
-    //        currentSubmission += 1;
-    //    }
-
-    //    SubmissionDisplay.text = currentSubmission.ToString();
-    //    return false;
-    //}
-
-    //bool HandleIncrement5()
-    //{
-    //    if (!isActivated)
-    //    {
-    //        return false;
-    //    }
-
-    //    KMAudio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, this.transform);
-
-    //    if (currentSubmission > 994)
-    //    {
-    //        currentSubmission = 999;
-    //    }
-    //    else
-    //    {
-    //        currentSubmission += 5;
-    //    }
-
-    //    SubmissionDisplay.text = currentSubmission.ToString();
-    //    return false;
-    //}
 
     bool HandleIncrementA()
     {
@@ -449,50 +401,6 @@ public class MadMathsModule : MonoBehaviour
         SubmissionDisplay.text = currentSubmission.ToString();
         return false;
     }
-
-    //bool HandleDecrement1()
-    //{
-    //    if (!isActivated)
-    //    {
-    //        return false;
-    //    }
-
-    //    KMAudio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, this.transform);
-
-    //    if (currentSubmission < -998)
-    //    {
-    //        currentSubmission = -999;
-    //    }
-    //    else
-    //    {
-    //        currentSubmission -= 1;
-    //    }
-
-    //    SubmissionDisplay.text = currentSubmission.ToString();
-    //    return false;
-    //}
-
-    //bool HandleDecrement5()
-    //{
-    //    if (!isActivated)
-    //    {
-    //        return false;
-    //    }
-
-    //    KMAudio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, this.transform);
-
-    //    if (currentSubmission < -994)
-    //    {
-    //        currentSubmission = -999;
-    //    }
-    //    else
-    //    {
-    //        currentSubmission -= 5;
-    //    }
-
-    //    SubmissionDisplay.text = currentSubmission.ToString();
-    //    return false;
-    //}
 
     bool HandleIncrementB()
     {
