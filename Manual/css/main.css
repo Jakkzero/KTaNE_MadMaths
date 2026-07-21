@@ -113,6 +113,13 @@ textarea {
     font-size: 1.4em;
     font-weight: normal;
 }
+
+.fragment-mono-regular {
+  font-family: "Fragment Mono", monospace;
+  font-weight: 400;
+  font-style: normal;
+}
+
 .flipped {
     transform: rotate(180deg);
     padding-top: 0.05em;
@@ -145,8 +152,8 @@ em {
 }
 
 h1 {
-    font-size: 2em;
-    margin: 0.67em 0 0;
+    font-size: 1.9em;
+    margin: 0.5em 0 0.5em;
 }
 
 h2 {
@@ -165,8 +172,9 @@ h4 {
 }
 
 h5 {
-    font-size: 0.83em;
-    margin: 1.67em 0 0;
+    font-size: 1em;
+    margin: 0.5em 0 0;
+    font-weight: normal;
 }
 
 h6 {
@@ -198,6 +206,11 @@ table, th, td {
 
 td, th {
     padding: .3em .6em .2em;
+}
+
+th {
+    font-size: 16px !important;
+    font-weight: normal;
 }
 
 .new-block-formatting-context {

@@ -3,325 +3,512 @@ using System.Collections.Generic;
 using System.Linq;
 using BombInfoExtensions;
 using UnityEngine;
+using UnityEngine.Networking;
 
-public class MadMathsModule : MonoBehaviour {
+public class MadMathsModule : MonoBehaviour
+{
 
-	public KMBombInfo BombInfo;
+    public KMBombInfo BombInfo;
     public KMBombModule BombModule;
     public KMAudio KMAudio;
     public KMSelectable Add1;
-	public KMSelectable Add5;
-	public KMSelectable Add10;
-	public KMSelectable Sub1;
-	public KMSelectable Sub5;
-	public KMSelectable Sub10;
-	public KMSelectable Reset;
-	public KMSelectable Submit;
+    public KMSelectable Add5;
+    public KMSelectable Sub1;
+    public KMSelectable Sub5;
+    public KMSelectable ButtonA;
+    public KMSelectable ButtonB;
+    public KMSelectable Reset;
+    public KMSelectable Submit;
     public TextMesh[] QuestionDisplay;
-	public TextMesh SubmissionDisplay;
+    public TextMesh SubmissionDisplay;
+    public TextMesh ButtonALabel;
+    public TextMesh ButtonBLabel;
 
-	bool isActivated = false;
+    static int ModuleIdCounter = 1;
+    int ModuleId;
 
-	// Represents the number on display in the Submission Display.
-	int currentSubmission = 0;
+    bool isActivated = false;
+    bool isSolved = false;
 
-	// Represents the 'true form' of the numbers on the display. Operator is indicated by -1.
-	int[] stateNumbers = new int[5];
-	/* Represents the rotation of the numbers on the display. Values within 0-4, with the rotation being 100x the number in degrees.
-	   Operator position is likely to be null. */
-	int[] stateRotation = new int[5];
-	// The offset into the stateNumbers array where the operator's position can be found.
-	int operatorPosition;
-	// TODO: Eventually implement mult or div, this should be changed.
-	bool isAdd;
+    // Represents the number on display in the Submission Display.
+    int currentSubmission = 0;
 
-	int[] resultNumbers = new int[5];
-	int finalResult;
+    // Represents the 'true form' of the numbers on the display. Negative numbers correspond to operators: -1 is +, -2 is -, -3 is ×.
+    int[] stateNumbers = new int[5];
+    /* Represents the rotation of the numbers on the display. Values within 0-4, with the rotation being 100x the number in degrees clockwise.
+	   Operators (+,-,×) always have 0 rotation. */
+    int[] stateRotation = new int[5];
+    int[] resultNumbers = new int[5];
+    int finalResult;
+    int buttonA;
+    int buttonB;
 
-	bool CheckSerialTargetLetters () {
-		string[] targetLetters = {"X", "P", "L", "D", "E"};
+    void Awake ()
+    {
+        ModuleId = ModuleIdCounter++;
+    }
 
-		foreach (string x in targetLetters) {
-			if (BombInfo.GetSerialNumber().Contains(x)) {
-				return true;
-			}
-		}
-		return false;
-	}
+    void SetSmallDigit(int index)
+    {
+        //List of numbers that will always result in a digit of 5 or less. Arrays are in the form {number,rotation}.
+        int[,] smallNumbers = {
+        {0,1},{0,4},{1,1},{1,2},{2,1},{4,1},{4,2},{4,4},{5,1},{5,2},{5,3},{5,4},{6,1},{6,2},{6,3},{7,1},{7,2},{8,1},{8,2},{9,2},{9,3}
+        };
+        int n = Random.Range(0, smallNumbers.GetLength(0));
+        stateNumbers[index] = smallNumbers[n, 0];
+        stateRotation[index] = smallNumbers[n, 1];
+        return;
+    }
 
-	// Initialisaton
-	void Start () {
+    void SetReallySmallDigit(int index)
+    {
+        //List of numbers that will always result in a digit of 1 or less. Arrays are in the form {number,rotation}
+        int[,] reallySmallNumbers = {
+        {0,1},{1,1},{1,2},{6,2},{7,2},{8,1},{8,2}
+        };
+        int n = Random.Range(0, reallySmallNumbers.GetLength(0));
+        stateNumbers[index] = reallySmallNumbers[n, 0];
+        stateRotation[index] = reallySmallNumbers[n, 1];
+        return;
+    }
 
-		bool serialHasTargetLetters = CheckSerialTargetLetters();
-		int numbersInSerial = BombInfo.GetSerialNumberNumbers().Count();
-		int batteryCount = BombInfo.GetBatteryCount();
-		int litCount = BombInfo.GetOnIndicators().Count();
+    bool CheckSerialTargetLetters()
+    {
+        string[] targetLetters = { "X", "P", "L", "D", "E" };
 
-		// Choose an operation
-		isAdd = Random.Range(1, 3) == 1 ? true : false;
-		// And place the operator (indicated by -1)
-		operatorPosition = Random.Range(1, 3);
+        foreach (string x in targetLetters)
+        {
+            if (BombInfo.GetSerialNumber().Contains(x))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
 
-		// Generate the numbers to display
-		for (var i = 0; i < 5; i++) {
-			if (i == operatorPosition) {
-				stateNumbers[i] = -1;
-				continue;
-			}
+    int Compute(int n1, int n2, int sign)
+    {
+        switch (sign * -1)
+        {
+            case 1:
+                return (n1 + n2);
+            case 2:
+                return (n1 - n2);
+            case 3:
+                return (n1 * n2);
+        }
+        return -999;
+    }
+    
+    void ArrayToLog(string description, int[] array, bool outputDisplayedDigit = false)
+    {
+        string[] stringArray = new string[array.Length];
+        string[] signs = { "+", "-", "×" };
+        string[] displayDigits = { "Q", "1", "2", "5", "3", "4", "F", "7", "U", "9" };
 
-			stateNumbers[i] = Random.Range(0, 9);
-			stateRotation[i] = Random.Range(0, 4);
-		}
+        for (int i = 0; i < array.Length; i++)
+        {
+            if (array[i] >= 0)
+            {
+                if (!outputDisplayedDigit)
+                {
+                    stringArray[i] = array[i].ToString();
+                }
+                else
+                {
+                    stringArray[i] = displayDigits[array[i]];
+                }
+            }
+            else
+            {
+                stringArray[i] = signs[array[i] * -1 - 1];
+            } 
+        }
 
-		Debug.Log("State Numbers: " + string.Join(" ", (from i in stateNumbers select i.ToString()).ToArray<string>()));
-		Debug.Log("State Rotation: " + string.Join(" ", (from i in stateRotation select i.ToString()).ToArray<string>()));
+        string output = string.Join(" ", stringArray);
+        
+        Debug.LogFormat("[Mad Maths #{0}] {1}: {2}", ModuleId, description, output);
+    } 
 
-		// Solve it for ourselves to find the result
+    //Finds two integer buttons that will allow the answer to be reached in the number of presses or less.
+    int[] CalculateButtons(int answer, int presses, int cycle)
+    {        
+        int answerQuotient = Mathf.Abs(answer) / (presses+1);
+        int answerRemainder = Mathf.Abs(answer) % (presses+1);
+        List<int> factors = new List<int>{1};
 
-		// First we process our numbers
-		for (var i = 0; i < 5; i++) {
-			if (stateNumbers[i] == -1) {
-				resultNumbers[i] = -1;
-				continue;
-			}
+        for (int i = 2; i < presses; i++)
+        {
+            if ((answerQuotient + answerRemainder) % i == 0)
+            {
+                factors.Add(i);
+            }
+        }
+        
+        int aPresses = factors[Random.Range(0, factors.Count)];
+        int bPresses = presses - aPresses;
+        int aButton = 1;
+        int bButton = -1;
 
-			switch (stateRotation[i]) {
-				case 0:
-					resultNumbers[i] = stateNumbers[i];
-					break;
+        //Ensures buttons can't be +1 or -1
+        while (Mathf.Abs(aButton) == 1 || Mathf.Abs(bButton) == 1) 
+        {
+            aButton = answerQuotient + (answerQuotient + answerRemainder) / aPresses + cycle * bPresses;
+            bButton = answerQuotient - cycle * aPresses;
+            cycle += 1;
+        }
 
-				case 1:
-					int x = stateNumbers[i];
-					for (var j = 0; j < 3; j++) {
-						x = (x % 2 == 0) ? x/2 : (x*3)+1;
-					}
-					resultNumbers[i] = x;
-					break;
-					
-				case 2:
-					if (stateNumbers[i] > 5) {
-						resultNumbers[i] = (stateNumbers[i]+3)*(stateNumbers[i]+3);
-					}
-					else {
-						resultNumbers[i] = stateNumbers[i] * stateNumbers[i] * stateNumbers[i];
-					}
-					break;
+        if (answer < 0)
+        {
+            aButton = aButton * -1;
+            bButton = bButton * -1;
+        }
+        
+        //Changes a button if it's 0
+        if (aButton == 0)
+        {
+            aPresses = 0;
+            aButton = Random.Range(2,10);
+            if (Random.Range(0,2) == 0)
+            {
+                aButton = aButton * -1;
+            }
+        }
 
-				case 3:
-					if (stateNumbers[i] == batteryCount || stateNumbers[i] == litCount || stateNumbers[i] == (batteryCount+litCount)) {
-						resultNumbers[i] = 9-stateNumbers[i];
-					}
-					else if (BombInfo.GetSerialNumberNumbers().Contains(stateNumbers[i])) {
-						resultNumbers[i] = stateNumbers[i]*7;
-					}
-					// This has been changed to number of indicators because I cannae be assed
-					else {
-						resultNumbers[i] = litCount + BombInfo.GetOffIndicators().Count();
-					}
-					break;
+        if (bButton == 0)
+        {
+            bPresses = 0;
+            bButton = Random.Range(2, 10);
+            if (Random.Range(0, 2) == 0)
+            {
+                bButton = bButton * -1;
+            }
+        }
 
-				case 4:
-					if (serialHasTargetLetters && BombInfo.GetStrikes() == 0) {
-						resultNumbers[i] = stateNumbers[i]*11;
-					}
-					else {
-						resultNumbers[i] = stateNumbers[i]*2 + numbersInSerial; 
-					}
-					break;
-			}
+        //Makes a button negative if both are the same
+        if (aButton == bButton)
+        {
+            aButton = aButton * -1;
+            bPresses = aPresses + bPresses;
+            aPresses = 0;
+        }
 
-		}
+        Debug.LogFormat("[Mad Maths #{0}] First button adds {1}, second button adds {2}. Press the first button {3} times and the second button {4} times, then submit to solve.", ModuleId, aButton, bButton, aPresses, bPresses);
 
-		Debug.Log("Result Numbers: " + string.Join(" ", (from i in resultNumbers select i.ToString()).ToArray<string>()));
+        int[] buttons = {aButton, bButton};
+        return buttons;
+    }
 
-		// Convert our number array into something we can evaluate
-		int operand1 = 0;
-		for (int i = 0; i < operatorPosition; i++) {
-			operand1 += (resultNumbers[i] % 10) * (int)System.Math.Pow(10, (operatorPosition-i));
-		}
-		operand1 /= 10;
+    // Initialisaton
+    void Start()
+    {
 
-		int operand2 = 0;
-		for (int i = operatorPosition+1; i < 5; i++) {
-			operand2 += (resultNumbers[i] % 10) * (int)System.Math.Pow(10, (5-i));
-		}
-		operand2 /= 10;
+        // Generate the numbers to display
+        for (var i = 0; i < 5; i++)
+        {
+            stateNumbers[i] = Random.Range(0, 10);
+            stateRotation[i] = Random.Range(1, 5);
+        }
 
-		// And finally evaluate.
-		finalResult = isAdd ? operand1 + operand2 : operand1 - operand2;
+        // Replace some number(s) with operation(s)
+        if (Random.Range(0, 2) == 0)
+        {
+            stateNumbers[2] = Random.Range(-2, 0);
+            stateRotation[2] = 0;
 
-		Debug.Log("Operand 1: " + operand1.ToString());
-		Debug.Log("Operand 2: " + operand2.ToString());
-		Debug.Log("Final Result: " + finalResult.ToString());
+            if (stateNumbers[2] == -1)
+            {
+                //limits size of numbers if addition is selected
+                if (Random.Range(0, 2) == 0)
+                {
+                    SetSmallDigit(0);
+                    SetSmallDigit(3);
+                }
+                else
+                {
+                    int i = Random.Range(0, 2) * 3;
+                    SetReallySmallDigit(i);
+                }
+            }
+        }
+        else
+        {
+            stateNumbers[1] = Random.Range(-3, 0);
+            stateRotation[1] = 0;
+            stateNumbers[3] = Random.Range(-3, 0);
+            stateRotation[3] = 0;
 
+            if (stateNumbers[1] == -3 && stateNumbers[3] == -3)
+            {
+                //limits size of numbers if multiplication is selected twice
+                if (Random.Range(0, 2) == 0)
+                {
+                    SetSmallDigit(0);
+                    SetSmallDigit(2);
+                    SetSmallDigit(4);
+                }
+                else
+                {
+                    int i = Random.Range(0, 3) * 2;
+                    SetReallySmallDigit(i);
+                }
+            }
+        }
 
-		// We also have to add our hooks
-		BombModule.OnActivate += ActivateModule;
-		Reset.OnInteract += HandleReset;
-		Submit.OnInteract += HandleSubmission;
-		Add1.OnInteract += HandleIncrement1;
-		Add5.OnInteract += HandleIncrement5;
-		Add10.OnInteract += HandleIncrement10;
-		Sub1.OnInteract += HandleDecrement1;
-		Sub5.OnInteract += HandleDecrement5;
-		Sub10.OnInteract += HandleDecrement10;
-	}
+        ArrayToLog("Displayed digits", stateNumbers, true);
+        ArrayToLog("Actual digits", stateNumbers);
+        ArrayToLog("Rotations (in hundreds of degrees clockwise)", stateRotation);
 
-	bool HandleIncrement1 () {
-		if (!isActivated) {
-			return false;
-		}
+        bool serialHasTargetLetters = CheckSerialTargetLetters();
+        int numbersInSerial = BombInfo.GetSerialNumberNumbers().Count();
+        int batteryCount = BombInfo.GetBatteryCount();
+        int litCount = BombInfo.GetOnIndicators().Count();
 
-		KMAudio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, this.transform);
+        // Solve it for ourselves to find the result
 
-		if (currentSubmission > 998) {
-			currentSubmission = 999;
-		}
-		else {
-			currentSubmission += 1;
-		}
+        // First we process our numbers
+        for (var i = 0; i < 5; i++)
+        {
+            if (stateNumbers[i] == -1)
+            {
+                resultNumbers[i] = -1;
+                continue;
+            }
 
-		SubmissionDisplay.text = currentSubmission.ToString();
-		return false;
-	}
+            switch (stateRotation[i])
+            {
+                case 0:
+                    resultNumbers[i] = stateNumbers[i];
+                    break;
 
-	bool HandleIncrement5 () {
-		if (!isActivated) {
-			return false;
-		}
+                case 1:
+                    int x = stateNumbers[i];
+                    for (var j = 0; j < 3; j++)
+                    {
+                        x = (x % 2 == 0) ? x / 2 : (x * 3) + 1;
+                    }
+                    resultNumbers[i] = x;
+                    break;
 
-		KMAudio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, this.transform);
+                case 2:
+                    if (stateNumbers[i] > 5)
+                    {
+                        resultNumbers[i] = (stateNumbers[i] + 3) * (stateNumbers[i] + 3);
+                    }
+                    else
+                    {
+                        resultNumbers[i] = stateNumbers[i] * stateNumbers[i] * stateNumbers[i];
+                    }
+                    break;
 
-		if (currentSubmission > 994) {
-			currentSubmission = 999;
-		}
-		else {
-			currentSubmission += 5;
-		}
+                case 3:
+                    if (stateNumbers[i] == batteryCount || stateNumbers[i] == litCount || stateNumbers[i] == (batteryCount + litCount))
+                    {
+                        resultNumbers[i] = 9 - stateNumbers[i];
+                    }
+                    else if (BombInfo.GetSerialNumberNumbers().Contains(stateNumbers[i]))
+                    {
+                        resultNumbers[i] = stateNumbers[i] * 7;
+                    }
+                    // This has been changed to number of indicators because I cannae be assed
+                    else
+                    {
+                        resultNumbers[i] = litCount + BombInfo.GetOffIndicators().Count();
+                    }
+                    break;
 
-		SubmissionDisplay.text = currentSubmission.ToString();
-		return false;
-	}
+                case 4:
+                    //Removed "and has 0 strikes" as you would sometimes need to change the buttons if the bomb gets a strike.
+                    if (serialHasTargetLetters)
+                    {
+                        resultNumbers[i] = stateNumbers[i] * 11;
+                    }
+                    else
+                    {
+                        resultNumbers[i] = stateNumbers[i] * 2 + numbersInSerial;
+                    }
+                    break;
+            }
 
-	bool HandleIncrement10 () {
-		if (!isActivated) {
-			return false;
-		}
+        }
 
-		KMAudio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, this.transform);
+        ArrayToLog("Numbers after calculation", resultNumbers);
 
-		if (currentSubmission > 899) {
-			currentSubmission = 999;
-		}
-		else {
-			currentSubmission += 10;
-		}
+        //Makes all results single digits
+        for (int i = 0; i < 5; i++)
+        {
+            if (resultNumbers[i] > 9)
+            {
+                resultNumbers[i] = resultNumbers[i] % 10;
+            }
+        }
 
-		SubmissionDisplay.text = currentSubmission.ToString();
-		return false;
-	}
+        ArrayToLog("After becoming single digit", resultNumbers);
 
-	bool HandleDecrement1 () {
-		if (!isActivated) {
-			return false;
-		}
+        /// Calculates the answer.
+        if (resultNumbers[2] < 0)
+        {
+            int value1 = 10 * resultNumbers[0] + resultNumbers[1];
+            int value2 = 10 * resultNumbers[3] + resultNumbers[4];
+            finalResult = Compute(value1, value2, resultNumbers[2]);
+        }
+        else if (resultNumbers[3] < -2 && resultNumbers[1] < 0 && resultNumbers[1] >= -2)
+        {
+            int value2 = Compute(resultNumbers[2], resultNumbers[4], resultNumbers[3]);
+            finalResult = Compute(resultNumbers[0], value2, resultNumbers[1]);
+        }
+        else if (resultNumbers[1] < 0 && resultNumbers[3] < 0)
+        {
+            int value1 = Compute(resultNumbers[0], resultNumbers[2], resultNumbers[1]);
+            finalResult = Compute(value1, resultNumbers[4], resultNumbers[3]);
+        }
 
-		KMAudio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, this.transform);
+        Debug.LogFormat("[Mad Maths #{0}] Answer: {1}", ModuleId, finalResult);
 
-		if (currentSubmission < -998) {
-			currentSubmission = -999;
-		}
-		else {
-			currentSubmission -= 1;
-		}
+        //Find a set of buttons that will allow the answer to be entered
 
-		SubmissionDisplay.text = currentSubmission.ToString();
-		return false;
-	}
+        int[] buttons = CalculateButtons(finalResult, Random.Range(3, 7), Random.Range(-3, 3));
+        buttonA = buttons[0];
+        buttonB = buttons[1];
 
-	bool HandleDecrement5 () {
-		if (!isActivated) {
-			return false;
-		}
+        // We also have to add our hooks
+        BombModule.OnActivate += ActivateModule;
+        Reset.OnInteract += HandleReset;
+        Submit.OnInteract += HandleSubmission;
+        ButtonA.OnInteract += HandleIncrementA;
+        ButtonB.OnInteract += HandleIncrementB;
+    }
 
-		KMAudio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, this.transform);
+    bool HandleIncrementA()
+    {
+        if (!isActivated || isSolved)
+        {
+            return false;
+        }
 
-		if (currentSubmission < -994) {
-			currentSubmission = -999;
-		}
-		else {
-			currentSubmission -= 5;
-		}
+        KMAudio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, this.transform);
 
-		SubmissionDisplay.text = currentSubmission.ToString();
-		return false;
-	}
+        if (Mathf.Abs(currentSubmission + buttonA) < 999)
+        {
+            currentSubmission += buttonA;
+            Debug.LogFormat("[Mad Maths #{0}] Pressed first button (adds {1}), submission is now {2}.", ModuleId, buttonA, currentSubmission);
+        }
+        else
+        {
+            Debug.LogFormat("[Mad Maths #{0}] Pressed first button (adds {1}), current submission can not be incremented/decremented further as that would require 4 digits of display so it remains at {2}.", ModuleId, buttonA, currentSubmission);
+        }
 
-	bool HandleDecrement10 () {
-		if (!isActivated) {
-			return false;
-		}
+        SubmissionDisplay.text = currentSubmission.ToString();
+        return false;
+    }
 
-		KMAudio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, this.transform);
+    bool HandleIncrementB()
+    {
+        if (!isActivated || isSolved)
+        {
+            return false;
+        }
 
-		if (currentSubmission < -989) {
-			currentSubmission = -999;
-		}
-		else {
-			currentSubmission -= 10;
-		}
+        KMAudio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, this.transform);
 
-		SubmissionDisplay.text = currentSubmission.ToString();
-		return false;
-	}
+        if (Mathf.Abs(currentSubmission + buttonB) < 999)
+        {
+            currentSubmission += buttonB;
+            Debug.LogFormat("[Mad Maths #{0}] Pressed second button (adds {1}), submission is now {2}.", ModuleId, buttonB, currentSubmission);
+        }
+        else
+        {
+            Debug.LogFormat("[Mad Maths #{0}] Pressed first button (adds {1}), current submission can not be incremented/decremented further as that would require 4 digits of display so it remains at {2}.", ModuleId, buttonB, currentSubmission);
+        }
 
-	protected bool HandleReset () {
-		if (!isActivated) {
-			return false;
-		}
+        SubmissionDisplay.text = currentSubmission.ToString();
+        return false;
+    }
 
-		KMAudio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, this.transform);
+    protected bool HandleReset()
+    {
+        if (!isActivated || isSolved)
+        {
+            return false;
+        }
 
-		currentSubmission = 0;
-		SubmissionDisplay.text = currentSubmission.ToString();
-		return false;
-	}
+        KMAudio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, this.transform);
 
-	protected bool HandleSubmission () {
-		if(!isActivated) {
-			return false;
-		}
+        currentSubmission = 0;
+        SubmissionDisplay.text = currentSubmission.ToString();
 
-		KMAudio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, this.transform);
+        Debug.LogFormat("[Mad Maths #{0}] Pressed (R)eset, submission is now {1}.", ModuleId, currentSubmission);
+        return false;
+    }
 
-		if (currentSubmission == finalResult) {
-			BombModule.HandlePass();
-		}
-		else {
-			BombModule.HandleStrike();
-		}
-		return false;
-	}
+    protected bool HandleSubmission()
+    {
+        if (!isActivated || isSolved)
+        {
+            return false;
+        }
 
-	void ActivateModule () {
-		isActivated = true;
+        KMAudio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, this.transform);
 
-		RenderDisplay();
-	}
+        if (currentSubmission == finalResult)
+        {
+            Debug.LogFormat("[Mad Maths #{0}] Pressed (S)ubmit, submission is {1}, answer is {2}. Correct, module solved!", ModuleId, currentSubmission, finalResult);
+            BombModule.HandlePass();
+            isSolved = true;
+        }
+        else
+        {
+            Debug.LogFormat("[Mad Maths #{0}] Pressed (S)ubmit, submission is {1}, answer is {2}. Incorrect, strike given!", ModuleId, currentSubmission, finalResult);
+            BombModule.HandleStrike();
+        }
+        return false;
+    }
 
-	void RenderDisplay () {
-		string[] displayMap = {"Q", "1", "2", "5", "3", "4", "F", "7", "U", "9"};
-		for (int i = 0; i < 5; i++) {
-			if (i == operatorPosition) {
-				QuestionDisplay[i].text = isAdd ? "+" : "-";
-				continue;
-			}
+    void ActivateModule()
+    {
+        isActivated = true;
+        SubmissionDisplay.text = "0";
+        RenderDisplay();
+        RenderButtons();
+    }
 
-			QuestionDisplay[i].text = displayMap[stateNumbers[i]];
+    void RenderDisplay()
+    {
+        string[] displayMap = { "Q", "1", "2", "5", "3", "4", "F", "7", "U", "9", "+", "-", "×" };
+        for (int i = 0; i < 5; i++)
+        {
+            if (stateNumbers[i] < 0)
+            {
+                QuestionDisplay[i].text = displayMap[stateNumbers[i]*-1 + 9];
+                continue;
+            }
 
-			// Quarternions are strange...
-			float rotationAmount = stateNumbers[i] != 8 ? stateRotation[i]*-100 : (stateRotation[i]*-100)+180;
-			QuestionDisplay[i].transform.localRotation = Quaternion.Euler(0.0f, 0.0f, rotationAmount);
-		}
-	}
+            QuestionDisplay[i].text = displayMap[stateNumbers[i]];
+
+            // Quarternions are strange...
+            float rotationAmount = stateNumbers[i] != 8 ? stateRotation[i] * -100 : (stateRotation[i] * -100) + 180;
+            QuestionDisplay[i].transform.localRotation = Quaternion.Euler(0.0f, 0.0f, rotationAmount);
+        }
+    }
+
+    void RenderButtons()
+    {
+        if (buttonA > 0)
+        {
+            ButtonALabel.text = "+" + buttonA.ToString();
+        }
+        else
+        {
+            ButtonALabel.text = buttonA.ToString();
+        }
+        
+        if (buttonB > 0)
+        {
+            ButtonBLabel.text = "+" + buttonB.ToString();
+        }
+        else
+        {
+            ButtonBLabel.text = buttonB.ToString();
+        }
+    }
 }
