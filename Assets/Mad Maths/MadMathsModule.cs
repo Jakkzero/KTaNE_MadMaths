@@ -544,14 +544,14 @@ public class MadMathsModule : MonoBehaviour
 
         if (currentSubmission == finalResult)
         {
+            Debug.LogFormat("[Mad Maths #{0}] Pressed (S)ubmit, submission is {1}, answer is {2}. Correct, module solved!", ModuleId, currentSubmission, finalResult);
             BombModule.HandlePass();
             isSolved = true;
-            Debug.LogFormat("[Mad Maths #{0}] Pressed (S)ubmit, submission is {1}, answer is {2}. Correct, module solved!", ModuleId, currentSubmission, finalResult);
         }
         else
         {
-            BombModule.HandleStrike();
             Debug.LogFormat("[Mad Maths #{0}] Pressed (S)ubmit, submission is {1}, answer is {2}. Incorrect, strike given!", ModuleId, currentSubmission, finalResult);
+            BombModule.HandleStrike();
         }
         return false;
     }
